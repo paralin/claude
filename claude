@@ -1,0 +1,51 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+from litellm import completion
+
+TEMPLATES = {
+    'spanish': {
+        'system': 'Translate the text the user provides to Spanish.',
+        'user': '<input>{stdin}</input>'
+    },
+    'bash': {
+        'system': 'The user will ask you how to do something with a bash shell. Write a script for them to do what they requested. Your response MUST contain ONLY a valid bash script which could be piped to bash directly. Any commentary MUST be prefixed with a comment hash: #.',
+        'user': '{stdin}'
+    },
+    # Add more templates here
+}
+
+def main():
+    if len(sys.argv) > 1:
+        template_name = sys.argv[1]
+        if template_name not in TEMPLATES:
+            print(f"Unknown template: {template_name}")
+            sys.exit(1)
+    else:
+        template_name = None
+
+    stdin = sys.stdin.read().strip()
+
+    if template_name:
+        messages = [
+            {'role': 'system', 'content': TEMPLATES[template_name]['system']},
+            {'role': 'user', 'content': TEMPLATES[template_name]['user'].format(stdin=stdin)}
+        ]
+    else:
+        messages = [{'role': 'user', 'content': stdin}]
+
+    response = completion(model='anthropic/claude-3-opus-20240229', messages=messages, stream=True)
+    response_text = ''
+    for part in response:
+        content = part.choices[0].delta.content
+        if content:
+            print(content, end='', flush=True)
+            response_text += content
+    print()
+
+    if not os.isatty(sys.stdout.fileno()) and os.isatty(sys.stderr.fileno()):
+        print(response_text, file=sys.stderr)
+
+if __name__ == '__main__':
+    main()
