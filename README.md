@@ -1,7 +1,6 @@
 # Claude CLI
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Python Version](https://img.shields.io/badge/python-3.6%2B-blue)](https://www.python.org/downloads/)
 
 A command-line interface for interacting with Anthropic's Claude Opus AI model.
 
